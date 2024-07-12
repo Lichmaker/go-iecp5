@@ -373,14 +373,22 @@ func (sf *Client) run(ctx context.Context) {
 					sf.Warn("station not active")
 					break // not active, discard apdu
 				}
-				if !sf.updateAckNoOut(head.rcvSN) || head.sendSN != sf.seqNoRcv {
+				if !sf.updateAckNoOut(head.rcvSN) {
 					sf.Error("fatal incoming acknowledge either earlier than previous or later than sendTime")
+					return
+				}
+				if head.sendSN != sf.seqNoRcv && sf.seqNoRcv > 0 {
+					sf.Error("incoming seqNo is not correct! cacheSeqNo-%v , incomingSeqNo-%v", sf.seqNoRcv, head.sendSN)
 					return
 				}
 
 				sf.rcvASDU <- asduVal
 				if sf.ackNoRcv == sf.seqNoRcv { // first unacked
 					unAckRcvSince = time.Now()
+				}
+				if sf.seqNoRcv == 0 {
+					sf.Warn("cacheSeqNo is 0. force using incomingSeqNo-%v", head.sendSN)
+					sf.seqNoRcv = head.sendSN
 				}
 
 				sf.seqNoRcv = (sf.seqNoRcv + 1) & 32767
