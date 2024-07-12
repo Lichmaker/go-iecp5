@@ -64,6 +64,7 @@ type Client struct {
 	onConnect        func(c *Client)
 	onConnectionLost func(c *Client)
 	onServerActive   func(c *Client)
+	onHeartbeat      func(c *Client)
 }
 
 // NewClient returns an IEC104 master,default config and default asdu.ParamsWide params
@@ -79,6 +80,7 @@ func NewClient(handler ClientHandlerInterface, o *ClientOption) *Client {
 		onConnect:        func(*Client) {},
 		onConnectionLost: func(*Client) {},
 		onServerActive:   func(c *Client) {},
+		onHeartbeat:      func(c *Client) {},
 	}
 }
 
@@ -102,6 +104,14 @@ func (sf *Client) SetConnectionLostHandler(f func(c *Client)) *Client {
 func (sf *Client) SetServerActiveHandler(f func(c *Client)) *Client {
 	if f != nil {
 		sf.onServerActive = f
+	}
+	return sf
+}
+
+// SetHeartbeatHandler set heartbeat handler
+func (sf *Client) SetHeartbeatHandler(f func(c *Client)) *Client {
+	if f != nil {
+		sf.onHeartbeat = f
 	}
 	return sf
 }
@@ -417,6 +427,7 @@ func (sf *Client) run(ctx context.Context) {
 					sf.sendUFrame(uTestFrConfirm)
 				case uTestFrConfirm:
 					testFrAliveSendSince = willNotTimeout
+					go sf.onHeartbeat(sf)
 				default:
 					sf.Error("illegal U-Frame functions[0x%02x] ignored", head.function)
 				}
