@@ -65,6 +65,7 @@ type Client struct {
 	onConnectionLost func(c *Client)
 	onServerActive   func(c *Client)
 	onHeartbeat      func(c *Client)
+	onReconnect      func(c *Client)
 }
 
 // NewClient returns an IEC104 master,default config and default asdu.ParamsWide params
@@ -81,6 +82,7 @@ func NewClient(handler ClientHandlerInterface, o *ClientOption) *Client {
 		onConnectionLost: func(*Client) {},
 		onServerActive:   func(c *Client) {},
 		onHeartbeat:      func(c *Client) {},
+		onReconnect:      func(c *Client) {},
 	}
 }
 
@@ -112,6 +114,13 @@ func (sf *Client) SetServerActiveHandler(f func(c *Client)) *Client {
 func (sf *Client) SetHeartbeatHandler(f func(c *Client)) *Client {
 	if f != nil {
 		sf.onHeartbeat = f
+	}
+	return sf
+}
+
+func (sf *Client) SetOnReconnectHandler(f func(c *Client)) *Client {
+	if f != nil {
+		sf.onReconnect = f
 	}
 	return sf
 }
@@ -154,6 +163,7 @@ func (sf *Client) running() {
 				return
 			}
 			time.Sleep(sf.option.reconnectInterval)
+			go sf.onReconnect(sf)
 			continue
 		}
 		sf.Debug("connect success")
