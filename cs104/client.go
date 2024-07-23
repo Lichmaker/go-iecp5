@@ -393,11 +393,11 @@ func (sf *Client) run(ctx context.Context) {
 					sf.Warn("station not active")
 					break // not active, discard apdu
 				}
-				if !sf.updateAckNoOut(head.rcvSN) && sf.seqNoSend != 0 {
+				if !sf.updateAckNoOut(head.rcvSN) {
 					sf.Error("fatal incoming acknowledge either earlier than previous or later than sendTime")
 					return
 				}
-				if head.sendSN != sf.seqNoRcv && sf.seqNoRcv != 0 {
+				if head.sendSN != sf.seqNoRcv && sf.seqNoRcv > 0 {
 					sf.Error("incoming seqNo is not correct! cacheSeqNo-%v , incomingSeqNo-%v", sf.seqNoRcv, head.sendSN)
 					return
 				}
