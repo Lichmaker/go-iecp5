@@ -171,7 +171,6 @@ func (sf *Client) running() {
 		sf.run(ctx)
 
 		sf.Debug("disconnected server %+v", sf.option.server)
-		go sf.onConnectionLost(sf)
 		select {
 		case <-ctx.Done():
 			return
