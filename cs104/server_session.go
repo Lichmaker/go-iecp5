@@ -109,7 +109,7 @@ func (sf *SrvSession) recvLoop() {
 				}
 				if rdCnt == length {
 					apdu := rawData[:length]
-					sf.Debug("RX Raw[% x]", apdu)
+					sf.Debug("[%s->%s] RX Raw[% x]", sf.conn.LocalAddr(), sf.conn.RemoteAddr(), apdu)
 					sf.rcvRaw <- apdu
 				}
 			}
@@ -131,7 +131,7 @@ func (sf *SrvSession) sendLoop() {
 		case <-sf.ctx.Done():
 			return
 		case apdu := <-sf.sendRaw:
-			sf.Debug("TX Raw[% x]", apdu)
+			sf.Debug("[%s->%s] TX Raw[% x]", sf.conn.LocalAddr(), sf.conn.RemoteAddr(), apdu)
 			for wrCnt := 0; len(apdu) > wrCnt; {
 				byteCount, err := sf.conn.Write(apdu[wrCnt:])
 				if err != nil {
