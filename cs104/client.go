@@ -230,7 +230,7 @@ func (sf *Client) recvLoop() {
 				}
 				if rdCnt == length {
 					apdu := rawData[:length]
-					sf.Debug("[%s->%s] RX Raw[% x]", sf.conn.LocalAddr(), sf.conn.RemoteAddr(), apdu)
+					sf.Debug("[%s->%s] RX Raw[% x]", sf.conn.RemoteAddr(), sf.conn.LocalAddr(), apdu)
 					sf.rcvRaw <- apdu
 				}
 			}
